@@ -37,7 +37,7 @@ include_once '../Controller/livrosController.php';
 
                 </select>
             </div>
-            <div class="formulario card bg-success" id="cadEditora">
+            <div class="formulario card bg-secondary" id="cadEditora">
                 <div class="form col-md-12 row form-group">
                     <label for="cnpj">CNPJ</label>
                     <input type="text" class="form-control col-md-3" name="cnpj" id="edcnpj" placeholder="Digite o cnpj da editora">

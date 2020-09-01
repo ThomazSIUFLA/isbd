@@ -89,18 +89,19 @@ class Consultas {
     }
 
     public function listarLivros ($conn) {
-        $query = "SELECT codIsbnLivro,
-                 tituloLivro,
-                 nomeAutor,
-                 anoPublicLivro,
-                 edicaoLivro,
-                 nomeEditora
-          FROM livro NATURAL JOIN
-               autorLivro NATURAL JOIN
-               editora
-          WHERE 1
-          GROUP BY codIsbnLivro
-          ORDER BY tituloLivro";
+        $query = "SELECT 
+                 L.codIsbnLivro,
+                 L.tituloLivro,
+                 A.nomeAutor,
+                 L.anoPublicLivro,
+                 L.edicaoLivro,
+                 E.nomeEditora
+          FROM livro L NATURAL JOIN
+               editora E LEFT OUTER JOIN
+               autorLivro A 
+          ON A.codIsbnLivro = L.codIsbnLivro
+          GROUP BY L.codIsbnLivro
+          ORDER BY L.tituloLivro";
         $res = $conn->query($query);
         return $res;
     }
@@ -111,6 +112,7 @@ class Consultas {
                    WHERE codIsbnLivro = $codLivro";
         $qtd = $this->conn->query($query);
         $qtdTotal = $qtd->fetch_assoc();
+        $qtd = null;
         $res['qtdtotal'] = $qtdTotal['qtd'];
         $query = "SELECT COUNT(codExemplar) AS qtd
                    FROM exemplar NATURAL JOIN
@@ -178,13 +180,13 @@ class Consultas {
         $codExemp = 0;
         $this->conn->query($query);
         $codExemp = 0;
-        $resCodExe = $this->conn->query("SELECT MAX(codExemplar) AS cod FROM exemplar WHERE codIsbnLivro = $codLivro");
+        $resCodExe = $this->conn->query("SELECT MAX(codExemplar) AS cod FROM exemplar");
         if($resCodExe){
             $codExemp = $resCodExe->fetch_assoc();
+
         }
         for($i=1; $i <= $qtd; $i++){
-            $cod = (int)$codExemp + $i;
-            $codExemplar = $codLivro."_".$cod;
+            $cod = (int)$codExemp['cod'] + $i;
             $ex = "INSERT INTO exemplar(
                 codExemplar, 
                 tipoEmprestimo, 
@@ -192,7 +194,7 @@ class Consultas {
                 corredorLocalExemplar, 
                 prateleiraLocalExemplar, 
                 codIsbnLivro) 
-            VALUES ($codExemplar, '$tipoEmp', $secao, $corr, $prat, '$codLivro')";
+            VALUES ($cod, '$tipoEmp', $secao, $corr, $prat, '$codLivro')";
             $this->conn->query($ex);
         }
         $query = "INSERT INTO autorlivro(codIsbnLivro, nomeAutor) VALUES ($codLivro,$autor)";        
