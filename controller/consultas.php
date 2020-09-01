@@ -155,6 +155,129 @@ class Consultas {
         $this->conn->query($query);       
     }
 
+    public function alterarLivro($codLivro, $titulo, $cat, $ano, $edicao, $atr, $qtd, $cnpj, $secao, $corr, $prat, $tipoEmp,$autor){
+        if($cat == 'L'){
+            $tipo = "estiloLivroLiteratura";
+        } else {
+            $tipo = "disciplinaLivroDidatico";
+        }
+        $query = "UPDATE livro
+            SET codIsbnLivro = '$codLivro',
+            tituloLivro = '$titulo',
+            anoPublicLivro = '$ano', 
+            edicaoLivro = '$edicao',
+            tipoLivro = '$cat',
+            $tipo = '$atr', 
+            cnpjEditora = '$cnpj'
+            WHERE codIsbnLivro = $codLivro"; 
+        $this->conn->query($query);
+
+        $q = $this->conn->query("SELECT COUNT(codExemplar) AS qtd FROM exemplar WHERE codIsbnLivro = $codLivro");
+        $qtdExiste = $q->fetch_assoc();
+
+        if($qtdExiste['qtd'] < $qtd){
+            echo'lklklklk';
+            $resCodExe = $this->conn->query("SELECT MAX(codExemplar) AS cod FROM exemplar");
+            if($resCodExe){
+                $codExemp = $resCodExe->fetch_assoc();
+            }
+
+            for($i=1; $i <= ($qtd - $qtdExiste['qtd']); $i++){
+                $cod = (int)$codExemp['cod'] + $i;
+                $ex = "INSERT INTO exemplar(
+                    codExemplar, 
+                    tipoEmprestimo, 
+                    secaoLocalExemplar, 
+                    corredorLocalExemplar, 
+                    prateleiraLocalExemplar, 
+                    codIsbnLivro) 
+                VALUES ($cod, '$tipoEmp', $secao, $corr, $prat, '$codLivro')";
+                $this->conn->query($ex);
+            }
+        } else if($qtdExiste['qtd'] > $qtd){
+            for ($i = 0; $i < ($qtdExiste['qtd'] - $qtd); $i++){
+                $resCodExe = $this->conn->query("SELECT MAX(codExemplar) AS cod FROM exemplar
+                WHERE codIsbnLivro = $codLivro");
+                $del = $resCodExe->fetch_assoc();
+                $this->conn->query("DELETE FROM exemplar WHERE codExemplar =". $del['cod']);
+            }
+        }
+
+        $query = "UPDATE autorlivro
+        SET nomeAutor = '$autor'
+        WHERE codIsbnLivro = $codLivro";
+        
+
+        if($this->conn->query($query)->num_rows > 0){
+            return;
+        }else {
+            $query = "INSERT INTO autorlivro(codIsbnLivro, nomeAutor) VALUES ('$codLivro','$autor')";
+            $this->conn->query($query);
+        }
+    }
+
+    public function detalharLivro ($codLivro){
+        $sql = "SELECT * FROM livro NATURAL JOIN editora WHERE codIsbnLivro = '$codLivro';";
+        $res = $this->conn->query($sql);
+        return $res;
+    }
+
+    public function listarAutor($codLivro){
+        $query = "SELECT nomeAutor
+        FROM autorLivro
+        WHERE codIsbnLivro = $codLivro";
+        return $this->conn->query($query);
+    }
+
+    public Function retornaExemplares($cod){
+        $query = "SELECT codExemplar
+        FROM exemplar
+        WHERE codIsbnLivro = $cod";
+        return $this->conn->query($query);
+    }
+
+    public function verificaDisponibilidade($codExemplar){
+        $query = "SELECT codExemplar
+        FROM exemplar NATURAL JOIN emprestimoreferente
+        NATURAL JOIN emprestimo
+        WHERE codExemplar = $codExemplar
+        AND dataDevolvido IS NULL";
+        return $this->conn->query($query);
+    }
+
+    public function excluiLivro($cod){
+        $query = "DELETE
+        FROM exemplar
+        WHERE codIsbnLivro = $cod";
+        if($this->conn->query($query)){
+            $query = "DELETE
+            FROM livro
+            WHERE codIsbnLivro = $cod";
+            if($this->conn->query($query)){
+                return true;
+            } else {
+                echo "<h1 class='text-white bg-danger>Falha ao excluir Livro</h1>'";
+                return false;
+            }
+        }else{
+            echo "<h1 class='text-white bg-danger>Falha ao excluir Exemplares</h1>'";
+            return false;
+        }        
+    }
+
+    public function buscaEditora($codLivro){
+        $sql = "SELECT nomeEditora 
+        FROM livro NATURAL JOIN editora WHERE codIsbnLivro = $codLivro";
+        return $this->conn->query($sql);
+    }
+
+    public function detalExemplares($codLivro){
+        $query = "SELECT *
+        FROM exemplar
+        WHERE codIsbnLivro = $codLivro";
+        return $this->conn->query($query);
+    }
+
     public function cadastrarLivro($codLivro, $titulo, $cat, $ano, $edicao, $atr, $qtd, $cnpj, $secao, $corr, $prat, $tipoEmp,$autor){
         if($cat == 'L'){
             $tipo = "estiloLivroLiteratura";
@@ -199,10 +322,4 @@ class Consultas {
         }
         $query = "INSERT INTO autorlivro(codIsbnLivro, nomeAutor) VALUES ($codLivro,$autor)";        
     }
-
-    public function listarAutor(){
-        $query = "SELECT nomeAutor FROM autorLivro";
-        $res = $this->conn->query($query);
-    }
 }
-?>

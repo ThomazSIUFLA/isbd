@@ -24,7 +24,7 @@ if(!isset($_SESSION)){
 </head>
 
 <body>
-    <nav class="navbar navbar-fixed-top site-header sticky-top py-1 navbar-expand-lg navbar-dark bg-gradient-primary">
+    <nav class="navbar navbar-fixed-top site-header sticky-top py-1 navbar-expand-lg navbar-dark bg-gradient-dark">
         <input type='button' class="btn btn-success font-weigth-bold" value='Voltar' onclick='history.back()' />
         <div class="container">
             
@@ -71,12 +71,6 @@ if(!isset($_SESSION)){
             </div>
         </div>
     </nav>
-    
-
-    
-
-
-
     <!-- Optional JavaScript -->
      <!-- jQuery first, then Popper.js, then Bootstrap JS -->
      <script src="../node_modules/jquery/dist/jquery.js"></script>

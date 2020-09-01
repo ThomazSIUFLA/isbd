@@ -15,28 +15,66 @@ $valor = $param[$chave];
   <title>Document</title>
 </head>
 
-<body style="background-image: url('../img/quadro.jpg');">
+<body style="background-image: url('../img/fundo.jpg');">
   <span class="d-block p-2 bg-gradient-dark text-info font-weight-bold h2 text-center">Detalhe do Livro</span>
   <?php
   $control = new LivrosController();
   $liv = $control->detalharLivro($valor);
   $reg = $liv->fetch_assoc();
+  $qtd = $control->retornaQtd($valor);
   ?>
-  <div class="card container center col-md-4" style="background: #007bff linear-gradient(180deg, #268fff, #007bff) repeat-x">
-    <img src="../img/thristan.jpg" class="card-img-top w-50" alt="...">
-    <div class="card-body">
-      <h5 class="card-title"><?php echo $reg['titulo'] ?></h5>
-      <p class="card-text">código ISBN <?php echo $reg['isbn'] ?></p>
-      <p class="card-text">código Biblioteca <?php echo $reg['codLivro'] ?></p>
+  <div class="container card center col-md-8" style="background: #007bff linear-gradient(180deg, #268fff, #007bff) repeat-x">
+    <div class="row">
+      <img src="../img/logo.png" class="card-img-top w-25" alt="logo">
+      <div class="bg-info card col-md-8 p-2 container">
+        <h1 class="card-title"><?php echo $reg['tituloLivro'] ?></h1>
+        <h3 class="card-title text-warning">código ISBN <?php echo $reg['codIsbnLivro'] ?></h3>
+        <?php
+        if ($reg['tipoLivro'] == 'L') {
+          echo "<p>Estilo:   <strong>" . $reg['estiloLivroLiteratura'] . "</strong></p>";
+        } else {
+          echo "<p>Disciplina:   <strong>" . $reg['disciplinaLivroDidatico'] . "</strong></p>";
+        }
+        if ($qtd['qtdDisp'] > 0) {
+          echo "<h3 class='text-white bg-success'>Disponível</h3><h2 class='text-white font-weigth-bold'>" . $qtd['qtdDisp'] . "</h2>";
+        } else {
+          echo "<h3 class='text-white bg-danger'>Indisponível</h3>";
+        }
+        ?>
+
+
+      </div>
+
     </div>
-    <ul class="list-group list-group-flush">
-      <li class="list-group-item">Editora <?php echo $reg['nomeEditora'] ?></li>
-      <li class="list-group-item">Edição <?php echo $reg['edicao'] ?></li>
-      <li class="list-group-item">Publicado em <?php echo $reg['anoPublic'] ?></li>
-    </ul>
     <div class="card-body">
-      <a href="./excluirLivro.php?cod=<?php echo $reg['codLivro'] ?>" class="card-link btn btn-outline-danger">Excluir</a>
-      <a class="card-link btn btn-outline-success" href="./alterarLivro.php?cod=<?php echo $reg['codLivro'] ?>">Alterar</a>
+      <ul class="list-group bg-info">
+        <li class="list-group-item bg-info">Editora <?php echo $reg['nomeEditora'] ?></li>
+        <li class="list-group-item bg-info">Edição <?php echo $reg['edicaoLivro'] ?></li>
+        <li class="list-group-item bg-info">Publicado em <?php echo $reg['anoPublicLivro'] ?></li>
+      </ul>
+      <ul class="list-group bg-info">
+        <li class="list-group-item bg-info">Autores
+          <?php
+          $aut = $control->listarAutor($reg['codIsbnLivro']);
+
+          if ($aut->num_rows > 0) {
+          ?>
+            <ul class="list-group bg-info">
+              <?php
+              while ($autor = $aut->fetch_assoc()) {
+              ?>
+                <li class="list-group-item bg-info"><?= $autor['nomeAutor'] ?></li>
+            <?php
+              }
+            } else {
+              echo "<h3>Não Existe autor cadastrado</h3>";
+            }
+            ?>
+            <h3 class="card-title">Quantidade no acervo:  <?= $qtd['qtdtotal'] ?></h3>
+    </div>
+    <div class="card-body">
+      <a href="./excluirLivro.php?cod=<?php echo $valor ?>" class="card-link btn btn-outline-danger">Excluir</a>
+      <a class="card-link btn btn-outline-success" href="./alterarLivro.php?cod=<?= $valor ?>">Alterar</a>
       <input type='button' class="btn btn-success" value='Voltar' onclick='history.back()' />
     </div>
   </div>

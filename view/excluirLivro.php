@@ -26,15 +26,26 @@ $valor = $param[$chave];
     <form method="POST">
         <div class="card container center" style="width: 50%;">
             <div class="card-body  bg-danger font-weight-bold">
-                <h5 class="card-title h1">Deseja excluir o livro <?php echo $reg['titulo'] ?></h5>
-                <p class="card-text">código ISBN <?php echo $reg['isbn'] ?></p>
-                <p class="card-text">código Biblioteca <?php echo $reg['codLivro']; ?></p>
+                <h5 class="card-title h1">Deseja excluir o livro <?php echo $reg['tituloLivro'] ?></h5>
+                <p class="card-text">código ISBN <?php echo $reg['codIsbnLivro'] ?></p>
             </div>
             <div class="card-body bg-dark" id="op">
-                <input type="hidden" value="<?php echo $reg['codLivro']; ?>" name="cod" />
+                <input type="text" name="cod" id="" value="<?= $valor ?>" hidden>
                 <input type='button' id="btn" value='Voltar' onclick='history.go(-2)' />
+                <?php
+                $qtd = $control->retornaQtd($valor);
+                if($qtd['qtdtotal'] == $qtd['qtdDisp']){
+                ?>
                 <button type="submit" class="btn btn-danger justify-content-end" id="btn1">Excluir</a>
+                <?php
+                }
+                else {
+                    echo "<h4 class='card-title h1'>Não pode ser excluído</h4>";
+                    echo "<h6 class='card-title h1'>Existem exemplares emprestados</h6>";
+                }
+                ?>
             </div>
+            
     </form>
 
     <?php
@@ -42,14 +53,12 @@ $valor = $param[$chave];
 
     if ($val != null) {
         $control = new LivrosController();
-
-        $res = $control->excluirLivro($reg['codLivro']);
+        $res = $control->excluirLivro($reg['codIsbnLivro']);
     ?>
         <div class="container custom-range::-ms-fill-upper">
-            <h1><?php echo $res . " ' " . $reg['titulo'] . "'" ?></h1>
+            <h1><?php echo $res . " ' " . $reg['tituloLivro'] . "'" ?></h1>
             <a class='btn btn-primary btn-lg' href='./livros.php'>Voltar</a>
         </div>
-
 
     <?php
 
